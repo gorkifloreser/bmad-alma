@@ -1,7 +1,9 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import type { Metadata } from "next";
 import { Roboto } from 'next/font/google';
+import Link from 'next/link';
 import theme from '../theme';
 import "./globals.css";
 
@@ -27,7 +29,20 @@ export default function RootLayout({
       <body>
         <AppRouterCacheProvider>
           <ThemeProvider theme={theme}>
-            {children}
+            <AppBar position="static">
+              <Toolbar>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                  <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+                    Alma
+                  </Link>
+                </Typography>
+                <Button color="inherit" component={Link} href="/login">Login</Button>
+                <Button color="inherit" component={Link} href="/signup">Sign Up</Button>
+              </Toolbar>
+            </AppBar>
+            <Box component="main" sx={{ p: 3 }}>
+              {children}
+            </Box>
           </ThemeProvider>
         </AppRouterCacheProvider>
       </body>
