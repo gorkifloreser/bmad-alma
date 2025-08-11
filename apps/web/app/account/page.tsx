@@ -2,6 +2,8 @@
 
 import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { useState } from 'react';
+import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
+import AuthButton from '../../src/app/components/AuthButton';
 
 const languages = [
   { code: 'en', name: 'English' },
@@ -15,9 +17,18 @@ export default function AccountPage() {
   const [primaryLanguage, setPrimaryLanguage] = useState('');
   const [secondaryLanguage, setSecondaryLanguage] = useState('');
 
-  const handleSave = () => {
-    // TODO: Implement save logic
-    console.log({ primaryLanguage, secondaryLanguage });
+  const handleSave = async () => {
+    const supabase = createSupabaseBrowserClient();
+    const { error } = await supabase.rpc('update_user_languages', {
+      p_primary_language: primaryLanguage,
+      p_secondary_language: secondaryLanguage,
+    });
+
+    if (error) {
+      alert(`Error updating languages: ${error.message}`);
+    } else {
+      alert('Settings saved successfully!');
+    }
   };
 
   return (
@@ -33,6 +44,7 @@ export default function AccountPage() {
         <Typography component="h1" variant="h5">
           Account Settings
         </Typography>
+        <AuthButton />
         <Box component="form" noValidate sx={{ mt: 3, width: '100%' }}>
           <FormControl fullWidth margin="normal">
             <InputLabel id="primary-language-label">Primary Language</InputLabel>

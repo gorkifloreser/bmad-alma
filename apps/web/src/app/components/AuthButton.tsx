@@ -30,6 +30,12 @@ export default function AuthButton() {
   return user ? (
     <>
       <span style={{ marginRight: '1rem' }}>{user.email}</span>
+      <Button color="inherit" component={Link} href="/account">
+        Account
+      </Button>
+      <Button color="inherit" component={Link} href="/brand-heart">
+        Brand Heart
+      </Button>
       <Button color="inherit" onClick={handleLogout}>
         Logout
       </Button>
