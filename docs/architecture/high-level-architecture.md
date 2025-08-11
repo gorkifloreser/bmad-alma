@@ -1,14 +1,13 @@
 # High Level Architecture
 
 ## Technical Summary
-The Alma App will be a modern, full-stack TypeScript application built as a modular monolith within a Turborepo monorepo. The frontend will be a server-side rendered (SSR) Next.js application, ensuring a fast and SEO-friendly user experience. The backend will be a robust Nest.js application providing a GraphQL API. Core services like database, authentication, and file storage will be managed by Supabase to accelerate development. The entire infrastructure will be managed via Terraform and deployed using a CI/CD pipeline on GitHub Actions.
+The Alma App will be a modern, full-stack TypeScript application. The frontend will be a server-side rendered (SSR) Next.js application, ensuring a fast and SEO-friendly user experience. The backend logic will be handled by Supabase Edge Functions. The entire backend infrastructure, including the database, authentication, and file storage, will be managed by Supabase. The project will be organized in a Turborepo monorepo to manage shared code and configurations.
 
 ## Platform and Infrastructure Choice
-*   **Platform:** A combination of Vercel for the Next.js frontend and a container service (like AWS Fargate or Google Cloud Run) for the Nest.js backend, managed by Terraform. Supabase will handle the data layer.
+*   **Platform:** Vercel for the Next.js frontend and Supabase for the entire backend infrastructure.
 *   **Key Services:**
     *   **Vercel:** Frontend hosting and deployment.
-    *   **Supabase:** PostgreSQL Database, Authentication, and Storage.
-    *   **AWS/GCP:** Backend hosting, and potentially for future services like dedicated AI model hosting.
+    *   **Supabase:** PostgreSQL Database, Authentication, Storage, and Edge Functions for backend logic.
 *   **Deployment Host and Regions:** US-East to start, with the ability to expand.
 
 ## Repository Structure
@@ -16,7 +15,7 @@ The Alma App will be a modern, full-stack TypeScript application built as a modu
 *   **Monorepo Tool:** Turborepo.
 *   **Package Organization:**
     *   `apps/web`: The Next.js frontend application.
-    *   `apps/api`: The Nest.js backend application.
+    *   `supabase/functions`: Supabase Edge Functions for backend logic.
     *   `packages/ui`: Shared React components (using MUI).
     *   `packages/types`: Shared TypeScript types and interfaces for API contracts.
     *   `packages/config`: Shared configurations (ESLint, TypeScript, etc.).
@@ -32,16 +31,13 @@ graph TD
         B[Next.js Frontend App]
     end
 
-    subgraph "Cloud Provider (AWS/GCP)"
-        C[Nest.js Backend API]
-        D[Pino Logger]
-        E[Sentry Monitoring]
-    end
-
     subgraph "Supabase Platform"
+        C[Supabase Edge Functions]
         F[PostgreSQL Database]
         G[Supabase Auth]
         H[Supabase Storage]
+        D[Pino Logger - via Functions]
+        E[Sentry Monitoring - via Functions]
     end
     
     subgraph "Third-Party Services"
@@ -51,7 +47,7 @@ graph TD
     end
 
     A -- "Interacts with" --> B;
-    B -- "GraphQL API Calls" --> C;
+    B -- "Function Calls" --> C;
     C -- "Authenticates via" --> G;
     C -- "Stores/Retrieves Data" --> F;
     C -- "Manages Files" --> H;

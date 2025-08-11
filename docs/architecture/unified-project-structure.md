@@ -3,14 +3,14 @@
 ```
 alma-app-monorepo/
 ├── apps/
-│   ├── web/          # Next.js Frontend
-│   └── api/          # Nest.js Backend
+│   └── web/            # Next.js Frontend
+├── supabase/
+│   └── functions/      # Supabase Edge Functions
 ├── packages/
-│   ├── ui/           # Shared MUI Components
-│   ├── types/        # Shared TypeScript Interfaces
-│   └── config/       # Shared Configurations
-├── terraform/        # Terraform IaC files
+│   ├── ui/             # Shared MUI Components
+│   ├── types/          # Shared TypeScript Interfaces
+│   └── config/         # Shared Configurations
 ├── .github/
-│   └── workflows/    # GitHub Actions CI/CD
-└── package.json      # Root package for Turborepo
+│   └── workflows/      # GitHub Actions CI/CD
+└── package.json        # Root package for Turborepo
 ```

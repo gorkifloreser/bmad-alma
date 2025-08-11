@@ -18,7 +18,7 @@ export default function AuthButton() {
       setUser(user);
     };
     getUser();
-  }, []);
+  }, [supabase.auth]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

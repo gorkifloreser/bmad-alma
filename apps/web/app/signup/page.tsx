@@ -47,7 +47,7 @@ export default function SignUpPage() {
           Create your account
         </Typography>
         <Typography component="p" sx={{ mt: 1, color: 'text.secondary' }}>
-          Welcome! Let's begin your journey.
+          Welcome! Let&apos;s begin your journey.
         </Typography>
         <Box component="form" onSubmit={handleSignUp} noValidate sx={{ mt: 1 }}>
           <TextField

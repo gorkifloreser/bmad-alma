@@ -12,14 +12,13 @@ This document outlines the complete fullstack architecture for the Alma App, inc
 ## High Level Architecture
 
 ### Technical Summary
-The Alma App will be a modern, full-stack TypeScript application built as a modular monolith within a Turborepo monorepo. The frontend will be a server-side rendered (SSR) Next.js application, ensuring a fast and SEO-friendly user experience. The backend will be a robust Nest.js application providing a GraphQL API. Core services like database, authentication, and file storage will be managed by Supabase to accelerate development. The entire infrastructure will be managed via Terraform and deployed using a CI/CD pipeline on GitHub Actions.
+The Alma App will be a modern, full-stack TypeScript application. The frontend will be a server-side rendered (SSR) Next.js application, ensuring a fast and SEO-friendly user experience. The backend logic will be handled by Supabase Edge Functions. The entire backend infrastructure, including the database, authentication, and file storage, will be managed by Supabase. The project will be organized in a Turborepo monorepo to manage shared code and configurations.
 
 ### Platform and Infrastructure Choice
-*   **Platform:** A combination of Vercel for the Next.js frontend and a container service (like AWS Fargate or Google Cloud Run) for the Nest.js backend, managed by Terraform. Supabase will handle the data layer.
+*   **Platform:** Vercel for the Next.js frontend and Supabase for the entire backend infrastructure.
 *   **Key Services:**
     *   **Vercel:** Frontend hosting and deployment.
-    *   **Supabase:** PostgreSQL Database, Authentication, and Storage.
-    *   **AWS/GCP:** Backend hosting, and potentially for future services like dedicated AI model hosting.
+    *   **Supabase:** PostgreSQL Database, Authentication, Storage, and Edge Functions for backend logic.
 *   **Deployment Host and Regions:** US-East to start, with the ability to expand.
 
 ### Repository Structure
@@ -27,7 +26,7 @@ The Alma App will be a modern, full-stack TypeScript application built as a modu
 *   **Monorepo Tool:** Turborepo.
 *   **Package Organization:**
     *   `apps/web`: The Next.js frontend application.
-    *   `apps/api`: The Nest.js backend application.
+    *   `supabase/functions`: Supabase Edge Functions for backend logic.
     *   `packages/ui`: Shared React components (using MUI).
     *   `packages/types`: Shared TypeScript types and interfaces for API contracts.
     *   `packages/config`: Shared configurations (ESLint, TypeScript, etc.).
@@ -43,16 +42,13 @@ graph TD
         B[Next.js Frontend App]
     end
 
-    subgraph "Cloud Provider (AWS/GCP)"
-        C[Nest.js Backend API]
-        D[Pino Logger]
-        E[Sentry Monitoring]
-    end
-
     subgraph "Supabase Platform"
+        C[Supabase Edge Functions]
         F[PostgreSQL Database]
         G[Supabase Auth]
         H[Supabase Storage]
+        D[Pino Logger - via Functions]
+        E[Sentry Monitoring - via Functions]
     end
     
     subgraph "Third-Party Services"
@@ -62,7 +58,7 @@ graph TD
     end
 
     A -- "Interacts with" --> B;
-    B -- "GraphQL API Calls" --> C;
+    B -- "Function Calls" --> C;
     C -- "Authenticates via" --> G;
     C -- "Stores/Retrieves Data" --> F;
     C -- "Manages Files" --> H;
@@ -80,19 +76,15 @@ graph TD
 | Frontend Language | TypeScript | ~5.x | Type safety and scalability. |
 | Frontend Framework | Next.js | ~14.x | SSR, routing, and React framework. |
 | UI Component Library | MUI | ~5.x | Foundational accessible components. |
-| Styling | MUI | ~5.x | Component and styling solution. |
 | State Management | Zustand | ~4.x | Simple, lightweight state management. |
-| Backend Language | TypeScript | ~5.x | Consistent language across the stack. |
-| Backend Framework | Nest.js | ~10.x | Modular and scalable backend architecture. |
-| API Style | GraphQL | | Flexible and efficient data fetching. |
+| Backend | Supabase Edge Functions | Deno | Serverless backend logic. |
 | Database | PostgreSQL | Supabase-managed | Relational data storage. |
 | File Storage | Supabase Storage | | For user document uploads. |
 | Authentication | Supabase Auth | | Secure user management. |
 | Frontend Testing | Jest & RTL | Latest | Unit and component testing. |
-| Backend Testing | Jest & Supertest | Latest | Unit and integration testing. |
+| Backend Testing | Deno Testing | Latest | Unit and integration testing for functions. |
 | E2E Testing | Cypress | Latest | End-to-end user flow testing. |
 | Build Tool | Turborepo | Latest | Monorepo management. |
-| IaC Tool | Terraform | Latest | Infrastructure as Code. |
 | CI/CD | GitHub Actions | | Automated builds and deployments. |
 | Monitoring | Sentry | | Error tracking and performance. |
 | Logging | Pino | | Structured and efficient logging. |
@@ -129,27 +121,27 @@ graph TD
 ```
 alma-app-monorepo/
 ├── apps/
-│   ├── web/          # Next.js Frontend
-│   └── api/          # Nest.js Backend
+│   └── web/            # Next.js Frontend
+├── supabase/
+│   └── functions/      # Supabase Edge Functions
 ├── packages/
-│   ├── ui/           # Shared MUI Components
-│   ├── types/        # Shared TypeScript Interfaces
-│   └── config/       # Shared Configurations
-├── terraform/        # Terraform IaC files
+│   ├── ui/             # Shared MUI Components
+│   ├── types/          # Shared TypeScript Interfaces
+│   └── config/         # Shared Configurations
 ├── .github/
-│   └── workflows/    # GitHub Actions CI/CD
-└── package.json      # Root package for Turborepo
+│   └── workflows/      # GitHub Actions CI/CD
+└── package.json        # Root package for Turborepo
 ```
 
 ## Security and Performance
 
 ### Security
 *   **Authentication:** Handled by Supabase Auth (JWT-based).
-*   **Authorization:** Implemented in the Nest.js GraphQL layer (e.g., using guards).
+*   **Authorization:** Implemented in Supabase Edge Functions and via PostgreSQL Row Level Security (RLS).
 *   **Data:** All sensitive data is encrypted at rest and in transit by Supabase.
 *   **File Uploads:** Supabase Storage will be configured with strict policies to only allow authenticated users to upload specific file types.
 
 ### Performance
 *   **Frontend:** Next.js SSR and Vercel's edge network will ensure fast initial page loads. Images will be optimized using Next/Image.
-*   **Backend:** Nest.js is highly performant. Database queries will be optimized, and caching strategies (e.g., Redis) can be added as needed.
-*   **API:** GraphQL allows the frontend to request only the data it needs, reducing payload size.
+*   **Backend:** Supabase Edge Functions are globally distributed for low latency. Database queries will be optimized.
+*   **API:** Edge Functions can be called directly, reducing payload size and complexity.
