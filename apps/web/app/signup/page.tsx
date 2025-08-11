@@ -3,7 +3,7 @@
 import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { createSupabaseBrowserClient } from '../../lib/supabase/client';
+import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -44,7 +44,10 @@ export default function SignUpPage() {
         }}
       >
         <Typography component="h1" variant="h5">
-          Sign Up
+          Create your account
+        </Typography>
+        <Typography component="p" sx={{ mt: 1, color: 'text.secondary' }}>
+          Welcome! Let's begin your journey.
         </Typography>
         <Box component="form" onSubmit={handleSignUp} noValidate sx={{ mt: 1 }}>
           <TextField

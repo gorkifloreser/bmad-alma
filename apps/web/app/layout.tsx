@@ -1,10 +1,11 @@
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import { ThemeProvider } from '@mui/material/styles';
-import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 import type { Metadata } from "next";
 import { Roboto } from 'next/font/google';
 import Link from 'next/link';
 import theme from '../theme';
+import AuthButton from '../src/app/components/AuthButton';
 import "./globals.css";
 
 const roboto = Roboto({
@@ -36,8 +37,7 @@ export default function RootLayout({
                     Alma
                   </Link>
                 </Typography>
-                <Button color="inherit" component={Link} href="/login">Login</Button>
-                <Button color="inherit" component={Link} href="/signup">Sign Up</Button>
+                <AuthButton />
               </Toolbar>
             </AppBar>
             <Box component="main" sx={{ p: 3 }}>

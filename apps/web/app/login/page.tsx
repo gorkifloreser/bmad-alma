@@ -3,7 +3,7 @@
 import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { createSupabaseBrowserClient } from '../../lib/supabase/client';
+import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +37,10 @@ export default function LoginPage() {
         }}
       >
         <Typography component="h1" variant="h5">
-          Log In
+          Welcome back
+        </Typography>
+        <Typography component="p" sx={{ mt: 1, color: 'text.secondary' }}>
+          Please sign in to continue.
         </Typography>
         <Box component="form" onSubmit={handleLogin} noValidate sx={{ mt: 1 }}>
           <TextField
