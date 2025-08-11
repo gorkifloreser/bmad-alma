@@ -1,6 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import BrandHeartPage from '../app/brand-heart/page';
 
+// Mock react-dropzone
+jest.mock('react-dropzone', () => ({
+  useDropzone: (options: { onDrop: (files: File[]) => void }) => ({
+    getRootProps: () => ({
+      onDrop: (event: { dataTransfer: { files: File[] } }) => options.onDrop(event.dataTransfer.files),
+    }),
+    getInputProps: () => ({}),
+    isDragActive: false,
+  }),
+}));
+
 // Mock the useRouter hook
 jest.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -14,13 +25,15 @@ const mockUpsert = jest.fn().mockResolvedValue({ error: null });
 const mockUpload = jest.fn().mockResolvedValue({ error: null });
 const mockFrom = jest.fn(() => ({
   upsert: mockUpsert,
+}));
+const mockStorageFrom = jest.fn(() => ({
   upload: mockUpload,
 }));
 jest.mock('../src/lib/supabase/client', () => ({
   createSupabaseBrowserClient: () => ({
     from: mockFrom,
     storage: {
-      from: mockFrom,
+      from: mockStorageFrom,
     },
     auth: {
       getUser: jest.fn().mockResolvedValue({ data: { user: { id: '123' } } }),
@@ -29,6 +42,10 @@ jest.mock('../src/lib/supabase/client', () => ({
 }));
 
 describe('BrandHeartPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('renders the form and allows saving the brand heart', async () => {
     render(<BrandHeartPage />);
 
@@ -67,16 +84,23 @@ describe('BrandHeartPage', () => {
     });
   });
 
-  it('allows a user to upload a document', async () => {
+  it('allows a user to upload a document via drag and drop', async () => {
     render(<BrandHeartPage />);
 
     const file = new File(['hello'], 'hello.png', { type: 'image/png' });
-    const fileInput = screen.getByLabelText(/click to upload a file/i);
+    const dropzone = screen.getByText(/drag 'n' drop/i);
 
-    fireEvent.change(fileInput, { target: { files: [file] } });
+    // Simulate a file drop
+    const dropEvent = new Event('drop', { bubbles: true });
+    Object.defineProperty(dropEvent, 'dataTransfer', {
+      value: {
+        files: [file],
+      },
+    });
+    fireEvent(dropzone, dropEvent);
 
     await waitFor(() => {
-      expect(mockFrom).toHaveBeenCalledWith('alma');
+      expect(mockStorageFrom).toHaveBeenCalledWith('alma');
       expect(mockUpload).toHaveBeenCalledWith(expect.any(String), file);
     });
   });

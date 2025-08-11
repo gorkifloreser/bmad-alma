@@ -1,7 +1,8 @@
 'use client';
 
 import { Box, Button, Container, TextField, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
 
 export default function BrandHeartPage() {
@@ -10,8 +11,8 @@ export default function BrandHeartPage() {
   const [values, setValues] = useState('');
   const [toneOfVoice, setToneOfVoice] = useState('');
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (!file) {
       return;
     }
@@ -32,7 +33,9 @@ export default function BrandHeartPage() {
     } else {
       alert('File uploaded successfully!');
     }
-  };
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const handleSave = async () => {
     const supabase = createSupabaseBrowserClient();
@@ -122,18 +125,30 @@ export default function BrandHeartPage() {
           >
             Save
           </Button>
-          <Typography component="h2" variant="h6" sx={{ mt: 4 }}>
-            Or Upload a Document
+        </Box>
+
+        <Box sx={{ mt: 4, width: '100%', textAlign: 'center' }}>
+          <Typography component="h2" variant="h6">
+            Or Upload to Your Knowledge Base
           </Typography>
-          <label htmlFor="file-upload" style={{ marginTop: '1rem', cursor: 'pointer' }}>
-            Click to upload a file
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            onChange={handleFileUpload}
-            style={{ display: 'none' }}
-          />
+          <Box
+            {...getRootProps()}
+            sx={{
+              border: '2px dashed grey',
+              borderRadius: 2,
+              p: 4,
+              mt: 2,
+              cursor: 'pointer',
+              backgroundColor: isDragActive ? 'action.hover' : 'transparent',
+            }}
+          >
+            <input {...getInputProps()} />
+            {isDragActive ? (
+              <p>Drop the files here ...</p>
+            ) : (
+              <p>Drag 'n' drop some files here, or click to select files</p>
+            )}
+          </Box>
         </Box>
       </Box>
     </Container>
