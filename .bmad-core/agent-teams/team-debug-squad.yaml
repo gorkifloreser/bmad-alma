@@ -1,0 +1,10 @@
+bundle:
+  name: Debug Squad
+  icon: 🐛
+  description: A specialized team of experts for debugging and resolving issues.
+agents:
+  - bmad-orchestrator
+  - architect
+  - dev
+  - qa
+workflows: null
