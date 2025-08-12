@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       .upload(filePath, buffer, {
         contentType: file.type || 'application/octet-stream',
         upsert: true,
-        metadata: metadata,
+        user_metadata: metadata,
       });
 
     if (error) {
