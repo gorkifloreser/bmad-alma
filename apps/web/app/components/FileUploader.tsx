@@ -1,40 +1,42 @@
 // components/FileUploader.tsx
 import { useState } from 'react';
+import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
 
 export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState('');
 
   const handleUpload = async () => {
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append(
-      'metadata',
-      JSON.stringify({ description: 'Documento para RAG', source: 'usuario' })
-    );
-
     setStatus('uploading');
-    setStatusMessage('Uploading file to storage...');
+    setStatusMessage('Uploading and processing file...');
 
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
+      const supabase = createSupabaseBrowserClient();
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const { data, error } = await supabase.functions.invoke('upload-and-process', {
         body: formData,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setStatus('success');
-        setStatusMessage(`✅ File uploaded: ${data.publicUrl}`);
-      } else {
+      if (error) {
         setStatus('error');
-        // Use the error message from the API response, or a default
-        setStatusMessage(`❌ Error: ${data.error || 'An unknown error occurred.'}`);
+        setStatusMessage(`❌ Error: ${error.message}`);
+        return;
       }
+
+      if (data.error) {
+        setStatus('error');
+        setStatusMessage(`❌ Error: ${data.error}`);
+        return;
+      }
+
+      setStatus('success');
+      setStatusMessage(`✅ ${data.message}`);
+
     } catch (error) {
       setStatus('error');
       setStatusMessage(`❌ Network Error: ${(error as Error).message}`);
@@ -46,9 +48,9 @@ export default function FileUploader() {
       <input
         type="file"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        disabled={status === 'uploading' || status === 'processing'}
+        disabled={status === 'uploading'}
       />
-      <button onClick={handleUpload} disabled={!file || status === 'uploading' || status === 'processing'}>
+      <button onClick={handleUpload} disabled={!file || status === 'uploading'}>
         {status === 'uploading' ? 'Uploading...' : 'Upload File'}
       </button>
       <p>{statusMessage}</p>
