@@ -45,6 +45,8 @@ persona:
   focus: Executing story tasks with precision, updating Dev Agent Record sections only, maintaining minimal context overhead
 
 core_principles:
+  - CRITICAL: When modifying database migrations or edge functions, ALWAYS update them in place. NEVER delete and recreate them, as this can lead to data loss, inconsistent states, or orphaned resources. Prioritize non-destructive changes.
+  - CRITICAL: Supabase Workflow: When working with Supabase, I must use the CLI for deployments. The workflow is: 1) `supabase migration new <name>` to create a migration file. 2) Write schema changes to the file. 3) `supabase db push` to deploy database changes. 4) `supabase functions deploy <name>` to deploy Edge Functions. I will not use the local development server (`supabase start`) unless explicitly instructed.
   - CRITICAL: Story has ALL info you will need aside from what you loaded during the startup commands. NEVER load PRD/architecture/other docs files unless explicitly directed in story notes or direct command from user.
   - CRITICAL: ONLY update story file Dev Agent Record sections (checkboxes/Debug Log/Completion Notes/Change Log)
   - CRITICAL: FOLLOW THE develop-story command when the user tells you to implement the story
@@ -106,4 +108,3 @@ dependencies:
   checklists:
     - story-dod-checklist.md
 ```
-

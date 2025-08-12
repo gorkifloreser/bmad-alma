@@ -1,7 +1,7 @@
 'use client';
 
 import { Box, Button, Container, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createSupabaseBrowserClient } from '../../src/lib/supabase/client';
 import AuthButton from '../../src/app/components/AuthButton';
 
@@ -16,6 +16,28 @@ const languages = [
 export default function AccountPage() {
   const [primaryLanguage, setPrimaryLanguage] = useState('');
   const [secondaryLanguage, setSecondaryLanguage] = useState('');
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const supabase = createSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (data) {
+          setPrimaryLanguage(data.primary_language || '');
+          setSecondaryLanguage(data.secondary_language || '');
+        }
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   const handleSave = async () => {
     const supabase = createSupabaseBrowserClient();
@@ -95,3 +117,4 @@ export default function AccountPage() {
     </Container>
   );
 }
+  

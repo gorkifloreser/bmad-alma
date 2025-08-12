@@ -29,6 +29,7 @@ const mockFrom = jest.fn(() => ({
 const mockStorageFrom = jest.fn(() => ({
   upload: mockUpload,
 }));
+const mockFunctionsInvoke = jest.fn().mockResolvedValue({ error: null });
 jest.mock('../src/lib/supabase/client', () => ({
   createSupabaseBrowserClient: () => ({
     from: mockFrom,
@@ -38,6 +39,9 @@ jest.mock('../src/lib/supabase/client', () => ({
     auth: {
       getUser: jest.fn().mockResolvedValue({ data: { user: { id: '123' } } }),
     },
+    functions: {
+      invoke: mockFunctionsInvoke,
+    },
   }),
 }));
 
@@ -46,45 +50,12 @@ describe('BrandHeartPage', () => {
     jest.clearAllMocks();
   });
 
-  it('renders the form and allows saving the brand heart', async () => {
+  it('renders the brand heart page', () => {
     render(<BrandHeartPage />);
-
-    // Find form elements
-    const missionInput = screen.getByLabelText(/mission/i);
-    const visionInput = screen.getByLabelText(/vision/i);
-    const valuesInput = screen.getByLabelText(/values/i);
-    const toneInput = screen.getByLabelText(/tone of voice/i);
-    const saveButton = screen.getByRole('button', { name: /save/i });
-
-    // Assert that form elements are present
-    expect(missionInput).toBeInTheDocument();
-    expect(visionInput).toBeInTheDocument();
-    expect(valuesInput).toBeInTheDocument();
-    expect(toneInput).toBeInTheDocument();
-    expect(saveButton).toBeInTheDocument();
-
-    // Simulate user input
-    fireEvent.change(missionInput, { target: { value: 'Our mission' } });
-    fireEvent.change(visionInput, { target: { value: 'Our vision' } });
-    fireEvent.change(valuesInput, { target: { value: 'Our values' } });
-    fireEvent.change(toneInput, { target: { value: 'Our tone' } });
-
-    // Simulate form submission
-    fireEvent.click(saveButton);
-
-    // Assert that the Supabase client was called with the correct data
-    await waitFor(() => {
-      expect(mockFrom).toHaveBeenCalledWith('brand_heart');
-      expect(mockUpsert).toHaveBeenCalledWith({
-        mission: 'Our mission',
-        vision: 'Our vision',
-        values: 'Our values',
-        tone_of_voice: 'Our tone',
-      });
-    });
+    expect(screen.getByText(/define your brand heart/i)).toBeInTheDocument();
   });
 
-  it('allows a user to upload a document via drag and drop', async () => {
+  it('allows a user to upload and process a document', async () => {
     render(<BrandHeartPage />);
 
     const file = new File(['hello'], 'hello.png', { type: 'image/png' });
@@ -99,9 +70,20 @@ describe('BrandHeartPage', () => {
     });
     fireEvent(dropzone, dropEvent);
 
+    // Wait for the "Upload & Process" button to appear and click it
+    const uploadButton = await screen.findByRole('button', { name: /upload & process/i });
+    fireEvent.click(uploadButton);
+
+    // Assert that the file was uploaded and the function was invoked
     await waitFor(() => {
-      expect(mockStorageFrom).toHaveBeenCalledWith('alma');
-      expect(mockUpload).toHaveBeenCalledWith(expect.any(String), file);
+      expect(mockStorageFrom).toHaveBeenCalledWith(process.env.NEXT_PUBLIC_SUPABASE_BUCKET_ID!);
+      expect(mockUpload).toHaveBeenCalledWith('123/hello.png', file, expect.any(Object));
+    });
+
+    await waitFor(() => {
+      expect(mockFunctionsInvoke).toHaveBeenCalledWith('process-document', {
+        body: { file_path: '123/hello.png', user_id: '123' },
+      });
     });
   });
 });
