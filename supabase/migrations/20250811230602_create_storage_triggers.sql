@@ -10,7 +10,10 @@ BEGIN
   PERFORM net.http_post(
     url:='https://buiprkjrvglmrytovjbp.supabase.co/functions/v1/process-document',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1aXBya2pydmdsbXJ5dG92amJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDkzMzAwNCwiZXhwIjoyMDcwNTA5MDA0fQ.SKywnjt9HJuZkKfyoWp6bBVRmQIGEEcbylExxOfKtOI"}'::jsonb,
-    body:=jsonb_build_object('record', NEW)
+    body:=jsonb_build_object(
+      'file_path', NEW.name,
+      'user_id', NEW.owner
+    )
   );
   RETURN NEW;
 END;
@@ -29,7 +32,10 @@ BEGIN
   PERFORM net.http_post(
     url:='https://buiprkjrvglmrytovjbp.supabase.co/functions/v1/update-document',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1aXBya2pydmdsbXJ5dG92amJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDkzMzAwNCwiZXhwIjoyMDcwNTA5MDA0fQ.SKywnjt9HJuZkKfyoWp6bBVRmQIGEEcbylExxOfKtOI"}'::jsonb,
-    body:=jsonb_build_object('record', NEW)
+    body:=jsonb_build_object(
+      'file_path', NEW.name,
+      'user_id', NEW.owner
+    )
   );
   RETURN NEW;
 END;
@@ -48,7 +54,10 @@ BEGIN
   PERFORM net.http_post(
     url:='https://buiprkjrvglmrytovjbp.supabase.co/functions/v1/delete-document',
     headers:='{"Content-Type": "application/json", "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ1aXBya2pydmdsbXJ5dG92amJwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDkzMzAwNCwiZXhwIjoyMDcwNTA5MDA0fQ.SKywnjt9HJuZkKfyoWp6bBVRmQIGEEcbylExxOfKtOI"}'::jsonb,
-    body:=jsonb_build_object('record', OLD)
+    body:=jsonb_build_object(
+      'file_path', OLD.name,
+      'user_id', OLD.owner
+    )
   );
   RETURN OLD;
 END;
